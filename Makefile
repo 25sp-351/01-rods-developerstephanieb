@@ -1,18 +1,17 @@
-CC     = clang
+all: rodcut
+
+OBJS = rodcut.o piece_values.o vec.o cut_list.o
+CC = gcc
 CFLAGS = -Wall -g
 
-SRCS   = main.c
-OBJS   = $(SRCS:.c=.o)
-EXEC   = main
+rodcut: $(OBJS)
+	gcc -o rodcut $(CFLAGS) $(OBJS)
 
-all: $(EXEC)
+rodcut.o: rodcut.c piece_values.h cut_list.h vec.h
 
-$(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS)
+piece_values.o: piece_values.c piece_values.h
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+cut_list.o: cut_list.c cut_list.h vec.h piece_values.h
 
 clean:
-	rm -f $(OBJS) $(EXEC)
-
+	rm -f rodcut $(OBJS)
