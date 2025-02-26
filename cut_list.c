@@ -1,5 +1,8 @@
 #include "cut_list.h"
 
+// Global flag to track if the file needs a JSON opening bracket
+static bool is_first_json_entry = true;
+
 CutList *new_cutlist(PieceLength length) {
   CutList *cl = malloc(sizeof(CutList));
   cl->groups = new_vec(sizeof(PieceGroup));
@@ -42,30 +45,70 @@ CutList *cutlist_add_piece(CutList *cl, PieceLengthValue pv) {
   return cl;
 }
 
-void cutlist_print_json(CutList *cl, PieceLength input_length,
-                        const char *filename) {
-  PieceGroup *groups = vec_items(cl->groups);
+void cutlist_reset_json(const char *filename) {
   FILE *fp = fopen(filename, "w");
   if (fp == NULL) {
     printf("Error opening file!\n");
     exit(1);
   }
-  fprintf(fp, "{\n");
-  fprintf(fp, "  \"input_length\": %d,\n", input_length);
-  fprintf(fp, "  \"value\": %d,\n", cl->total_value);
-  fprintf(fp, "  \"remainder\": %d,\n", cl->remainder);
-  fprintf(fp, "  \"cuts\": [\n");
+  fclose(fp);
+  is_first_json_entry = true;
+}
+
+void cutlist_print_json(CutList *cl, PieceLength input_length,
+                        const char *filename) {
+  PieceGroup *groups = vec_items(cl->groups);
+
+  if (is_first_json_entry) {
+    cutlist_reset_json(filename);
+  }
+
+  FILE *fp = fopen(filename, "a");
+  if (fp == NULL) {
+    printf("Error opening file!\n");
+    exit(1);
+  }
+
+  if (is_first_json_entry) {
+    fprintf(fp, "[\n");
+    is_first_json_entry = false;
+  } else {
+    fprintf(fp, ",\n");
+  }
+
+  fprintf(fp, "  {\n");
+  fprintf(fp, "    \"input_length\": %d,\n", input_length);
+  fprintf(fp, "    \"value\": %d,\n", cl->total_value);
+  fprintf(fp, "    \"remainder\": %d,\n", cl->remainder);
+  fprintf(fp, "    \"cuts\": [\n");
+
   for (int ix = 0; ix < cl->groups->length; ix++) {
     int total_value_for_length = groups[ix].count * groups[ix].pv.value;
     fprintf(fp,
-            "    { \"length\": %d, \"count\": %d, \"piece_value\": %d, "
+            "      { \"length\": %d, \"count\": %d, \"piece_value\": %d, "
             "\"value\": %d }%s\n",
             groups[ix].pv.length, groups[ix].count, groups[ix].pv.value,
             total_value_for_length, ix == cl->groups->length - 1 ? "" : ",");
   }
-  fprintf(fp, "  ]\n");
-  fprintf(fp, "}\n");
+
+  fprintf(fp, "    ]\n");
+  fprintf(fp, "  }");
+
+  is_first_json_entry = false;
+
   fclose(fp);
+}
+
+void cutlist_close_json(const char *filename) {
+  if (!is_first_json_entry) {
+    FILE *fp = fopen(filename, "a");
+    if (fp == NULL) {
+      printf("Error opening file!\n");
+      exit(1);
+    }
+    fprintf(fp, "\n]\n");
+    fclose(fp);
+  }
 }
 
 void cutlist_print(CutList *cl, PieceLength input_length) {
@@ -77,7 +120,7 @@ void cutlist_print(CutList *cl, PieceLength input_length) {
   printf("Remainder: %5d\n", cl->remainder);
   printf("Value:     %5d\n", cl->total_value);
 
-  cutlist_print_json(cl, input_length, "cuts.json");
+  cutlist_print_json(cl, input_length, CUTLIST_JSON_FILENAME);
 }
 
 CutList *choose_best_cuts(CutList *starting_cutlist, Vec pv) {

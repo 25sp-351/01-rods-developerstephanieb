@@ -2,13 +2,6 @@
 
 #define SIZE_INCREMENT 20
 
-// typedef struct vec {
-//     void* base;
-//     size_t element_size;
-//     size_t allocated;
-//     size_t length;
-// } *Vec;
-
 Vec new_vec(size_t element_size) {
   Vec v = malloc(sizeof(struct vec));
   v->element_size = element_size;

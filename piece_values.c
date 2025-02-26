@@ -8,67 +8,6 @@ int compare_piece_values(PieceLengthValue *a, PieceLengthValue *b) {
   return b->length - a->length;
 }
 
-/*
-Vec read_piece_values() {
-  Vec val_list = new_vec(sizeof(PieceLengthValue));
-
-  while (!feof(stdin)) {
-    PieceLengthValue item;
-
-    if (2 != fscanf(stdin, "%d, %d\n", &item.length, &item.value) ||
-        item.length < 1 || item.value < 1 ||
-        _list_contains_length(val_list, item.length)) {
-      vec_free(val_list);
-      return NULL;
-    }
-
-    vec_add(val_list, &item);
-  }
-
-  if (val_list->length == 0) {
-    vec_free(val_list);
-    return NULL;
-  }
-  qsort(vec_items(val_list), val_list->length, sizeof(PieceLengthValue),
-        (int (*)(const void *, const void *))compare_piece_values);
-
-  return val_list;
-}
-
-Vec read_piece_values() {
-  Vec val_list = new_vec(sizeof(PieceLengthValue));
-  char buffer[128];
-
-  while (fgets(buffer, sizeof(buffer), stdin)) {
-
-    if (buffer[0] == '#' || buffer[0] == '\n') {
-      continue;
-    }
-
-    PieceLengthValue item;
-
-    if (sscanf(buffer, "%d, %d", &item.length, &item.value) != 2 ||
-        item.length < 1 || item.value < 1 ||
-        _list_contains_length(val_list, item.length)) {
-      vec_free(val_list);
-      return NULL;
-    }
-
-    vec_add(val_list, &item);
-  }
-
-  if (val_list->length == 0) {
-    vec_free(val_list);
-    return NULL;
-  }
-
-  qsort(vec_items(val_list), val_list->length, sizeof(PieceLengthValue),
-        (int (*)(const void *, const void *))compare_piece_values);
-
-  return val_list;
-}
-*/
-
 Vec read_piece_values(const char *filename) {
   Vec val_list = new_vec(sizeof(PieceLengthValue));
   char buffer[128];
